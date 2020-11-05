@@ -29,7 +29,6 @@ public class CollectorModule implements Module {
     private List<Ship> ships;
     private List<Ship> list1;
     private List<Ship> list2;
-    private List<Ship> list3;
 
     private Config config;
 
@@ -158,9 +157,7 @@ public class CollectorModule implements Module {
                 didFirstCheck = true;
             }
             else {
-                list2 = main.mapManager.entities.ships.stream().filter(s -> hero.locationInfo.distance(s.locationInfo) <= 300).collect(Collectors.toList());
-                list3 = list1.stream().filter(list2::contains).collect(Collectors.toList());
-
+                list2 = main.mapManager.entities.ships.stream().filter(s -> hero.locationInfo.distance(s.locationInfo) <= 300).filter(list1::contains).collect(Collectors.toList());
                 didFirstCheck = false;
             }
         }
@@ -213,7 +210,7 @@ public class CollectorModule implements Module {
     public void findBox() {
         LocationInfo heroLoc = hero.locationInfo;
 
-        if (config.COLLECT.PREVENT_COLLECTING_TOGETHER && !list3.isEmpty()) {
+        if (config.COLLECT.PREVENT_COLLECTING_TOGETHER && !list2.isEmpty()) {
             Box best = boxes
                     .stream()
                     .filter(this::canCollect)

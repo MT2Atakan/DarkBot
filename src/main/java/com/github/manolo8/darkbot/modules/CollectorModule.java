@@ -14,6 +14,7 @@ import com.github.manolo8.darkbot.modules.utils.SafetyFinder;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.github.manolo8.darkbot.Main.API;
 import static java.lang.Math.cos;
@@ -26,6 +27,10 @@ public class CollectorModule implements Module {
 
     private List<Box> boxes;
     private List<Ship> ships;
+    private List<Ship> list1;
+    private List<Ship> list2;
+    private List<Ship> list3;
+
     private Config config;
 
     private HeroManager hero;
@@ -148,13 +153,14 @@ public class CollectorModule implements Module {
     public void checkNearbyShips() {
         if (config.COLLECT.PREVENT_COLLECTING_TOGETHER && firstCheckTime < System.currentTimeMillis() - 5000) {
             if (!didFirstCheck) {
-                [LIST 1 ARRAY];
+                list1 = main.mapManager.entities.ships.stream().filter(s -> hero.locationInfo.distance(s.locationInfo) <= 300).collect(Collectors.toList());
                 firstCheckTime = System.currentTimeMillis();
                 didFirstCheck = true;
             }
             else {
-                [LIST 2 ARRAY];
-                [TAKE SAME ENTITIES FROM LIST 1 AND LIST 2 ARRAYS INTO LIST3 ARRAY]
+                list2 = main.mapManager.entities.ships.stream().filter(s -> hero.locationInfo.distance(s.locationInfo) <= 300).collect(Collectors.toList());
+                list3 = list1.stream().filter(list2::contains).collect(Collectors.toList());
+
                 didFirstCheck = false;
             }
         }
@@ -207,7 +213,7 @@ public class CollectorModule implements Module {
     public void findBox() {
         LocationInfo heroLoc = hero.locationInfo;
 
-        if (config.COLLECT.PREVENT_COLLECTING_TOGETHER && [LIST3 INCLUDES CURRENT SHIPS <=300]) {
+        if (config.COLLECT.PREVENT_COLLECTING_TOGETHER && !list3.isEmpty()) {
             Box best = boxes
                     .stream()
                     .filter(this::canCollect)

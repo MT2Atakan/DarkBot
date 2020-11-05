@@ -50,6 +50,7 @@ public class LootNCollectorModule implements Module {
 
     @Override
     public void tick() {
+        collectorModule.checkNearbyShips();
         if (collectorModule.isNotWaiting() && lootModule.checkDangerousAndCurrentMap()) {
             pet.setEnabled(true);
 

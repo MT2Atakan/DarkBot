@@ -40,6 +40,9 @@ public class CollectorModule implements Module {
     protected SafetyFinder safety;
     protected long refreshing;
 
+    private boolean didFirstCheck;
+    private long firstCheckTime;
+
     private int DISTANCE_FROM_DANGEROUS = 1500;
 
     @Override
@@ -79,6 +82,7 @@ public class CollectorModule implements Module {
         if (isNotWaiting() && checkDangerousAndCurrentMap()) {
             main.guiManager.pet.setEnabled(true);
             checkInvisibility();
+            checkNearbyShips();
             checkDangerous();
 
             findBox();
@@ -141,6 +145,21 @@ public class CollectorModule implements Module {
         }
     }
 
+    public void checkNearbyShips() {
+        if (config.COLLECT.PREVENT_COLLECTING_TOGETHER && firstCheckTime < System.currentTimeMillis() - 5000) {
+            if (!didFirstCheck) {
+                [LIST 1 ARRAY];
+                firstCheckTime = System.currentTimeMillis();
+                didFirstCheck = true;
+            }
+            else {
+                [LIST 2 ARRAY];
+                [TAKE SAME ENTITIES FROM LIST 1 AND LIST 2 ARRAYS INTO LIST3 ARRAY]
+                didFirstCheck = false;
+            }
+        }
+    }
+
     private void checkDangerous() {
         if (config.COLLECT.STAY_AWAY_FROM_ENEMIES) {
 
@@ -188,12 +207,21 @@ public class CollectorModule implements Module {
     public void findBox() {
         LocationInfo heroLoc = hero.locationInfo;
 
-        Box best = boxes
-                .stream()
-                .filter(this::canCollect)
-                .min(Comparator.<Box>comparingInt(b -> b.boxInfo.priority)
-                        .thenComparingDouble(heroLoc::distance)).orElse(null);
-        this.current = current == null || best == null || current.isCollected() || isBetter(best) ? best : current;
+        if (config.COLLECT.PREVENT_COLLECTING_TOGETHER && [LIST3 INCLUDES CURRENT SHIPS <=300]) {
+            Box best = boxes
+                    .stream()
+                    .filter(this::canCollect)
+                    .min(Comparator.<Box>comparingInt(b -> b.boxInfo.priority) [CONTINUE WITH FILTER UNDER 1000 DISTANCE AND PICK ANY RANDOMLY];
+            this.current = current == null || best == null || current.isCollected() || isBetter(best) ? best : current;
+        }
+        else {
+            Box best = boxes
+                    .stream()
+                    .filter(this::canCollect)
+                    .min(Comparator.<Box>comparingInt(b -> b.boxInfo.priority)
+                            .thenComparingDouble(heroLoc::distance)).orElse(null);
+            this.current = current == null || best == null || current.isCollected() || isBetter(best) ? best : current;
+        }
     }
 
     private boolean canCollect(Box box) {

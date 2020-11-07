@@ -211,10 +211,36 @@ public class CollectorModule implements Module {
         LocationInfo heroLoc = hero.locationInfo;
 
         if (config.COLLECT.PREVENT_COLLECTING_TOGETHER && !list2.isEmpty()) {
-            Box best = boxes
-                    .stream()
-                    .filter(this::canCollect)
-                    .min(Comparator.<Box>comparingInt(b -> b.boxInfo.priority) [CONTINUE WITH FILTER UNDER 1000 DISTANCE AND PICK ANY RANDOMLY];
+            List<Box> listBoxes = boxes.stream().filter(this::canCollect).collect(Collectors.toList());
+            listBoxes.sort(Comparator.comparingInt(b -> b.boxInfo.priority));
+
+            int n = 0;
+            for (int i = 0; i < listBoxes.size(); i++) {
+                if (i == 0 || listBoxes.get(i).boxInfo.priority == listBoxes.get(i - 1).boxInfo.priority) {
+                    n = i;
+                } else {
+                    break;
+                }
+            }
+
+            for (int j = n + 1; j < listBoxes.size(); j++) {
+                listBoxes.remove(j);
+                j--;
+            }
+
+            Box best = null;
+            if (listBoxes.size() != 0) {
+                List<Box> listBoxesRange1000 = listBoxes.stream().filter(b -> hero.locationInfo.distance(b.locationInfo) <= 1000).collect(Collectors.toList());
+                if(listBoxesRange1000.size()!=0){
+                    int randomIndexRange1000 = (int) (Math.random() * listBoxesRange1000.size());
+                    best = listBoxesRange1000.get(randomIndexRange1000);
+                }
+                else {
+                    int randomIndex = (int) (Math.random() * listBoxes.size());
+                    best = listBoxes.get(randomIndex);
+                }
+            }
+
             this.current = current == null || best == null || current.isCollected() || isBetter(best) ? best : current;
         }
         else {
